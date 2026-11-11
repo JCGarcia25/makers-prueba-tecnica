@@ -1,0 +1,15 @@
+**/bin/
+**/obj/
+**/node_modules/
+**/dist/
+**/.angular/
+**/__pycache__/
+**/.pytest_cache/
+.venv/
+.env
+.tools/
+artifacts/
+!analytics/examples/
+*.user
+*.log
+.DS_Store
