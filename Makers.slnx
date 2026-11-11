@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/backend/">
+    <Project Path="src/backend/Makers.Domain/Makers.Domain.csproj" />
+    <Project Path="src/backend/Makers.Application/Makers.Application.csproj" />
+    <Project Path="src/backend/Makers.Infrastructure/Makers.Infrastructure.csproj" />
+    <Project Path="src/backend/Makers.Api/Makers.Api.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Makers.Domain.Tests/Makers.Domain.Tests.csproj" />
+    <Project Path="tests/Makers.Api.Tests/Makers.Api.Tests.csproj" />
+  </Folder>
+</Solution>
