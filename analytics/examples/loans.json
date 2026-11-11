@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "1.0",
+  "currency": "COP",
+  "extractedAt": "2026-11-11T15:00:00Z",
+  "source": "synthetic-example",
+  "loans": [
+    { "loanId": "00000000-0000-0000-0000-000000000001", "applicantId": "10000000-0000-0000-0000-000000000001", "amount": 1000000, "termMonths": 12, "status": "Approved", "createdAt": "2026-08-01T13:00:00Z", "decidedAt": "2026-08-01T19:00:00Z" },
+    { "loanId": "00000000-0000-0000-0000-000000000002", "applicantId": "10000000-0000-0000-0000-000000000002", "amount": 2500000, "termMonths": 24, "status": "Rejected", "createdAt": "2026-08-08T14:00:00Z", "decidedAt": "2026-08-09T10:00:00Z" },
+    { "loanId": "00000000-0000-0000-0000-000000000003", "applicantId": "10000000-0000-0000-0000-000000000001", "amount": 1800000, "termMonths": 18, "status": "Approved", "createdAt": "2026-09-03T12:00:00Z", "decidedAt": "2026-09-03T17:00:00Z" },
+    { "loanId": "00000000-0000-0000-0000-000000000004", "applicantId": "10000000-0000-0000-0000-000000000003", "amount": 5000000, "termMonths": 36, "status": "Pending", "createdAt": "2026-09-17T15:00:00Z", "decidedAt": null },
+    { "loanId": "00000000-0000-0000-0000-000000000005", "applicantId": "10000000-0000-0000-0000-000000000002", "amount": 900000, "termMonths": 6, "status": "Approved", "createdAt": "2026-10-02T13:30:00Z", "decidedAt": "2026-10-02T16:00:00Z" },
+    { "loanId": "00000000-0000-0000-0000-000000000006", "applicantId": "10000000-0000-0000-0000-000000000004", "amount": 7200000, "termMonths": 48, "status": "Rejected", "createdAt": "2026-10-20T11:00:00Z", "decidedAt": "2026-10-21T11:00:00Z" },
+    { "loanId": "00000000-0000-0000-0000-000000000007", "applicantId": "10000000-0000-0000-0000-000000000003", "amount": 3200000, "termMonths": 24, "status": "Pending", "createdAt": "2026-11-01T16:00:00Z", "decidedAt": null },
+    { "loanId": "00000000-0000-0000-0000-000000000008", "applicantId": "10000000-0000-0000-0000-000000000001", "amount": 1500000, "termMonths": 12, "status": "Approved", "createdAt": "2026-11-04T13:00:00Z", "decidedAt": "2026-11-04T21:00:00Z" }
+  ]
+}
