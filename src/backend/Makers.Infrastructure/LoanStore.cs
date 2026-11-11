@@ -3,6 +3,7 @@ using Makers.Application;
 using Makers.Domain;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 
 namespace Makers.Infrastructure;
 
@@ -13,7 +14,7 @@ public sealed class LoanCache(IMemoryCache memory)
     public SemaphoreSlim Gate { get; } = new(1, 1);
 }
 
-public sealed class LoanStore(LoanDbContext db, LoanCache cache) : ILoanStore
+public sealed class LoanStore(LoanDbContext db, LoanCache cache, Microsoft.Extensions.Logging.ILogger<LoanStore> logger) : ILoanStore
 {
     public Task<Loan?> FindAsync(Guid id, CancellationToken ct) =>
         db.Loans.Include(l => l.Decisions).SingleOrDefaultAsync(l => l.Id == id, ct);
@@ -58,13 +59,20 @@ public sealed class LoanStore(LoanDbContext db, LoanCache cache) : ILoanStore
         await cache.Gate.WaitAsync(ct);
         try
         {
-            await using var transaction = await db.Database.BeginTransactionAsync(ct);
             if (delete) db.Loans.Remove(loan);
-            await db.SaveChangesAsync(ct);
-            await transaction.CommitAsync(ct);
+            foreach (var decision in loan.Decisions.Where(decision => db.Entry(decision).State == EntityState.Detached))
+                db.Decisions.Add(decision);
+            if (db.Database.IsRelational())
+            {
+                await using var transaction = await db.Database.BeginTransactionAsync(ct);
+                await db.SaveChangesAsync(ct);
+                await transaction.CommitAsync(ct);
+            }
+            else await db.SaveChangesAsync(ct);
         }
-        catch (DbUpdateConcurrencyException)
+        catch (DbUpdateConcurrencyException exception)
         {
+            logger.LogWarning(exception, "Conflicto de concurrencia al guardar el préstamo {LoanId}", loan.Id);
             throw new BusinessException("La solicitud cambió durante la operación. Actualiza e inténtalo de nuevo.", 409);
         }
         finally
@@ -77,13 +85,23 @@ public sealed class LoanStore(LoanDbContext db, LoanCache cache) : ILoanStore
     public async Task<AnalyticsSnapshot> ExportAsync(CancellationToken ct)
     {
         // RepeatableRead fixes the dataset while the extraction metadata and rows are produced.
-        await using var transaction = await db.Database.BeginTransactionAsync(IsolationLevel.RepeatableRead, ct);
         var extractedAt = DateTimeOffset.UtcNow;
-        var rows = await db.Loans.AsNoTracking().OrderBy(l => l.CreatedAt).ThenBy(l => l.Id)
-            .Select(l => new AnalyticsRow(l.Id, l.UserId, l.Amount, l.TermMonths, l.Status.ToString(), l.CreatedAt,
-                l.Decisions.Select(d => (DateTimeOffset?)d.DecidedAt).FirstOrDefault()))
-            .ToListAsync(ct);
-        await transaction.CommitAsync(ct);
+        List<AnalyticsRow> rows;
+        if (db.Database.IsRelational())
+        {
+            await using var transaction = await db.Database.BeginTransactionAsync(IsolationLevel.RepeatableRead, ct);
+            rows = await ReadAnalyticsRowsAsync(ct);
+            await transaction.CommitAsync(ct);
+        }
+        else rows = await ReadAnalyticsRowsAsync(ct);
         return new AnalyticsSnapshot("1.0", "COP", extractedAt, "operational-api", rows);
+    }
+
+    private async Task<List<AnalyticsRow>> ReadAnalyticsRowsAsync(CancellationToken ct)
+    {
+        var loans = await db.Loans.AsNoTracking().Include(l => l.Decisions)
+            .OrderBy(l => l.CreatedAt).ThenBy(l => l.Id).ToListAsync(ct);
+        return loans.Select(l => new AnalyticsRow(l.Id, l.UserId, l.Amount, l.TermMonths, l.Status.ToString(),
+            l.CreatedAt, l.Decisions.Select(d => (DateTimeOffset?)d.DecidedAt).FirstOrDefault())).ToList();
     }
 }
