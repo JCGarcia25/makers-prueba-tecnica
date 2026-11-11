@@ -11,6 +11,8 @@ RUN dotnet publish src/backend/Makers.Api/Makers.Api.csproj -c Release --no-rest
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0
 WORKDIR /app
+USER root
+RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
 COPY --from=build /app .
 USER $APP_UID
 EXPOSE 8080

@@ -10,7 +10,8 @@ services:
       interval: 5s
       timeout: 3s
       retries: 10
-    volumes: ["postgres_data:/var/lib/postgresql/data"]
+    ports: ["5432:5432"]
+    volumes: ["postgres_data:/var/lib/postgresql"]
   api:
     build:
       context: .
@@ -23,7 +24,7 @@ services:
     depends_on:
       db: { condition: service_healthy }
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/health || exit 1"]
+      test: ["CMD-SHELL", "curl --fail --silent http://localhost:8080/health > /dev/null || exit 1"]
       interval: 5s
       timeout: 3s
       retries: 10
