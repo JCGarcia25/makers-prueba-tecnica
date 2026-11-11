@@ -12,12 +12,15 @@ public sealed class ApiExceptionHandler(IProblemDetailsService problemDetails, I
         var status = exception switch
         {
             BusinessException business => business.StatusCode,
+            BadHttpRequestException => StatusCodes.Status400BadRequest,
             UnauthorizedAccessException => StatusCodes.Status401Unauthorized,
             _ => StatusCodes.Status500InternalServerError
         };
         if (status >= 500) logger.LogError(exception, "Error inesperado al procesar {Path}", context.Request.Path);
         var detail = exception is BusinessException or UnauthorizedAccessException
             ? exception.Message
+            : exception is BadHttpRequestException
+                ? "El cuerpo de la solicitud no contiene JSON válido."
             : "Ocurrió un error interno. Intenta de nuevo más tarde.";
         context.Response.StatusCode = status;
         return await problemDetails.TryWriteAsync(new ProblemDetailsContext
